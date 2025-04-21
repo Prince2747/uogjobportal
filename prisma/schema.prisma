@@ -1,0 +1,212 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model account {
+  id                String  @id
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              user    @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Account_userId_fkey")
+
+  @@unique([provider, providerAccountId], map: "Account_provider_providerAccountId_key")
+  @@index([userId], map: "Account_userId_fkey")
+}
+
+model session {
+  id           String   @id
+  sessionToken String   @unique(map: "Session_sessionToken_key")
+  userId       String
+  expires      DateTime
+  user         user     @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Session_userId_fkey")
+
+  @@index([userId], map: "Session_userId_fkey")
+}
+
+model user {
+  id            String    @id
+  name          String?
+  email         String?   @unique(map: "User_email_key")
+  emailVerified DateTime?
+  image         String?
+  role          user_role @default(APPLICANT)
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime
+  department    String?
+  password      String?
+  account       account[]
+  session       session[]
+  applications  application[]
+}
+
+model verificationtoken {
+  identifier String
+  token      String   @unique(map: "VerificationToken_token_key")
+  expires    DateTime
+
+  @@unique([identifier, token], map: "VerificationToken_identifier_token_key")
+}
+
+model job {
+  id          String   @id @default(uuid())
+  title       String
+  description String   @db.Text
+  department  String
+  status      job_status @default(ACTIVE)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime
+  applications application[]
+}
+
+model application {
+  id        String   @id @default(uuid())
+  userId    String
+  jobId     String
+  status    application_status @default(PENDING)
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job       job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "Application_userId_fkey")
+  @@index([jobId], map: "Application_jobId_fkey")
+}
+
+enum user_role {
+  ADMIN
+  HR
+  DEPARTMENT
+  APPLICANT
+}
+
+enum job_status {
+  ACTIVE
+  INACTIVE
+  CLOSED
+}
+
+enum application_status {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model account {
+  id                String  @id
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              user    @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Account_userId_fkey")
+
+  @@unique([provider, providerAccountId], map: "Account_provider_providerAccountId_key")
+  @@index([userId], map: "Account_userId_fkey")
+}
+
+model session {
+  id           String   @id
+  sessionToken String   @unique(map: "Session_sessionToken_key")
+  userId       String
+  expires      DateTime
+  user         user     @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Session_userId_fkey")
+
+  @@index([userId], map: "Session_userId_fkey")
+}
+
+model user {
+  id            String    @id
+  name          String?
+  email         String?   @unique(map: "User_email_key")
+  emailVerified DateTime?
+  image         String?
+  role          user_role @default(APPLICANT)
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime
+  department    String?
+  password      String?
+  account       account[]
+  session       session[]
+  applications  application[]
+}
+
+model verificationtoken {
+  identifier String
+  token      String   @unique(map: "VerificationToken_token_key")
+  expires    DateTime
+
+  @@unique([identifier, token], map: "VerificationToken_identifier_token_key")
+}
+
+model job {
+  id          String   @id @default(uuid())
+  title       String
+  description String   @db.Text
+  department  String
+  status      job_status @default(ACTIVE)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime
+  applications application[]
+}
+
+model application {
+  id        String   @id @default(uuid())
+  userId    String
+  jobId     String
+  status    application_status @default(PENDING)
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job       job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "Application_userId_fkey")
+  @@index([jobId], map: "Application_jobId_fkey")
+}
+
+enum user_role {
+  ADMIN
+  HR
+  DEPARTMENT
+  APPLICANT
+}
+
+enum job_status {
+  ACTIVE
+  INACTIVE
+  CLOSED
+}
+
+enum application_status {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
