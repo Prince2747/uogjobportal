@@ -1,276 +1,201 @@
 "use client";
 
-
+import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { 
+  Users, 
+  Briefcase, 
+  FileText, 
+  Bell, 
+  PlusCircle, 
+  ChevronRight,
+  UserPlus,
+  FileCheck,
+  Building
+} from "lucide-react";
+
+type DashboardStats = {
+  totalUsers: number;
+  activeJobs: number;
+  totalApplications: number;
+};
 
 export default function AdminDashboard() {
   const { data: session } = useSession();
+  const [stats, setStats] = useState<DashboardStats>({
+    totalUsers: 0,
+    activeJobs: 0,
+    totalApplications: 0,
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await fetch("/api/admin/dashboard");
+        if (!response.ok) {
+          throw new Error("Failed to fetch dashboard stats");
+        }
+        const data = await response.json();
+        setStats(data);
+      } catch (err) {
+        console.error("Error fetching dashboard stats:", err);
+        setError(err instanceof Error ? err.message : "Failed to load dashboard stats");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header Section */}
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
-          <p className="text-gray-600">Manage your job portal system</p>
+          <h1 className="text-3xl font-bold text-[#3A95E8]">
+            Welcome Back
+          </h1>
+          <p className="text-gray-600 mt-1">Here's what's happening in your job portal today.</p>
         </div>
-        <div className="flex space-x-4">
+        <div className="flex space-x-3">
+          <button className="px-4 py-2 bg-white text-gray-700 rounded-lg border border-gray-200 hover:border-[#3A95E8] hover:text-[#3A95E8] transition-all duration-200 flex items-center shadow-sm">
+            <Bell className="w-4 h-4 mr-2" />
+            <span>Notifications</span>
+          </button>
           <Link
-            href="/admin/users"
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            href="/admin/jobs/new"
+            className="px-4 py-2 bg-[#3A95E8] text-white rounded-lg hover:bg-[#3A95E8]/90 transition-all duration-200 flex items-center shadow-sm"
           >
-            Manage Users
-          </Link>
-          <Link
-            href="/admin/permissions"
-            className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
-          >
-            Manage Permissions
+            <PlusCircle className="w-4 h-4 mr-2" />
+            <span>Post New Job</span>
           </Link>
         </div>
       </div>
+
+      {error && (
+        <div className="bg-red-50 text-red-600 p-4 rounded-lg">
+          {error}
+        </div>
+      )}
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow duration-200 border border-gray-100">
           <div className="flex justify-between items-start">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900">
-                Total Users
-              </h3>
-              <p className="text-3xl font-bold text-blue-600">150</p>
+            <div className="space-y-2">
+              <span className="text-sm font-medium text-gray-500">Total Users</span>
+              <div className="flex items-baseline space-x-2">
+                <h3 className="text-2xl font-bold text-gray-900">
+                  {isLoading ? "..." : stats.totalUsers}
+                </h3>
+              </div>
               <p className="text-sm text-gray-600">Active accounts</p>
             </div>
-            <div className="p-2 bg-blue-100 rounded-full">
-              <svg
-                className="w-6 h-6 text-blue-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                />
-              </svg>
+            <div className="p-2 bg-[#3A95E8]/10 rounded-lg">
+              <Users className="w-6 h-6 text-[#3A95E8]" />
             </div>
           </div>
+          <Link
+            href="/admin/users"
+            className="mt-4 flex items-center text-sm text-[#3A95E8] hover:text-[#3A95E8]/80"
+          >
+            <span>View all users</span>
+            <ChevronRight className="w-4 h-4 ml-1" />
+          </Link>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
+        <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow duration-200 border border-gray-100">
           <div className="flex justify-between items-start">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900">
-                Active Jobs
-              </h3>
-              <p className="text-3xl font-bold text-green-600">25</p>
+            <div className="space-y-2">
+              <span className="text-sm font-medium text-gray-500">Active Jobs</span>
+              <div className="flex items-baseline space-x-2">
+                <h3 className="text-2xl font-bold text-gray-900">
+                  {isLoading ? "..." : stats.activeJobs}
+                </h3>
+              </div>
               <p className="text-sm text-gray-600">Open positions</p>
             </div>
-            <div className="p-2 bg-green-100 rounded-full">
-              <svg
-                className="w-6 h-6 text-green-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                />
-              </svg>
+            <div className="p-2 bg-[#FFBC09]/10 rounded-lg">
+              <Briefcase className="w-6 h-6 text-[#FFBC09]" />
             </div>
           </div>
+          <Link
+            href="/admin/jobs"
+            className="mt-4 flex items-center text-sm text-[#FFBC09] hover:text-[#FFBC09]/80"
+          >
+            <span>View all jobs</span>
+            <ChevronRight className="w-4 h-4 ml-1" />
+          </Link>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-purple-500">
+        <div className="bg-white rounded-xl shadow-sm p-6 hover:shadow-md transition-shadow duration-200 border border-gray-100">
           <div className="flex justify-between items-start">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900">
-                Applications
-              </h3>
-              <p className="text-3xl font-bold text-purple-600">342</p>
+            <div className="space-y-2">
+              <span className="text-sm font-medium text-gray-500">Applications</span>
+              <div className="flex items-baseline space-x-2">
+                <h3 className="text-2xl font-bold text-gray-900">
+                  {isLoading ? "..." : stats.totalApplications}
+                </h3>
+              </div>
               <p className="text-sm text-gray-600">Total submissions</p>
             </div>
-            <div className="p-2 bg-purple-100 rounded-full">
-              <svg
-                className="w-6 h-6 text-purple-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
-              </svg>
+            <div className="p-2 bg-[#3A95E8]/10 rounded-lg">
+              <FileText className="w-6 h-6 text-[#3A95E8]" />
             </div>
           </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-orange-500">
-          <div className="flex justify-between items-start">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900">Employers</h3>
-              <p className="text-3xl font-bold text-orange-600">12</p>
-              <p className="text-sm text-gray-600">Active companies</p>
-            </div>
-            <div className="p-2 bg-orange-100 rounded-full">
-              <svg
-                className="w-6 h-6 text-orange-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                />
-              </svg>
-            </div>
-          </div>
+          <Link
+            href="/admin/applications"
+            className="mt-4 flex items-center text-sm text-[#3A95E8] hover:text-[#3A95E8]/80"
+          >
+            <span>View applications</span>
+            <ChevronRight className="w-4 h-4 ml-1" />
+          </Link>
         </div>
       </div>
 
-      {/* Quick Actions and Recent Activity */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            Quick Actions
-          </h2>
-          <div className="grid grid-cols-2 gap-4">
-            <Link
-              href="/admin/users/new"
-              className="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-            >
-              <svg
-                className="w-5 h-5 text-blue-600 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
-                />
-              </svg>
-              <span>Add New User</span>
-            </Link>
-            <Link
-              href="/admin/jobs/new"
-              className="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-            >
-              <svg
-                className="w-5 h-5 text-green-600 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                />
-              </svg>
-              <span>Post New Job</span>
-            </Link>
-            <Link
-              href="/admin/applications"
-              className="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-            >
-              <svg
-                className="w-5 h-5 text-purple-600 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                />
-              </svg>
-              <span>View Applications</span>
-            </Link>
-            <Link
-              href="/admin/settings"
-              className="flex items-center p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-            >
-              <svg
-                className="w-5 h-5 text-gray-600 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-              </svg>
-              <span>Settings</span>
-            </Link>
-          </div>
-        </div>
+      {/* Quick Actions */}
+      <div>
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <Link href="/admin/users/new" className="p-4 text-left bg-gray-50 rounded-lg hover:bg-[#3A95E8]/5 transition-colors duration-200">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-[#3A95E8]/10 rounded-lg">
+                <UserPlus className="w-5 h-5 text-[#3A95E8]" />
+              </div>
+              <div>
+                <h3 className="font-medium text-gray-900">Add New User</h3>
+                <p className="text-sm text-gray-500">Create a new user account</p>
+              </div>
+            </div>
+          </Link>
 
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
-            Recent Activity
-          </h2>
-          <div className="space-y-4">
-            <div className="flex items-center">
-              <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
+          <Link href="/admin/jobs/new" className="p-4 text-left bg-gray-50 rounded-lg hover:bg-[#FFBC09]/5 transition-colors duration-200">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-[#FFBC09]/10 rounded-lg">
+                <Building className="w-5 h-5 text-[#FFBC09]" />
+              </div>
               <div>
-                <p className="text-sm font-medium text-gray-900">
-                  New job posted
-                </p>
-                <p className="text-xs text-gray-500">
-                  Assistant Professor in Computer Science - 2 hours ago
-                </p>
+                <h3 className="font-medium text-gray-900">Post New Job</h3>
+                <p className="text-sm text-gray-500">Create a job listing</p>
               </div>
             </div>
-            <div className="flex items-center">
-              <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+          </Link>
+
+          <Link href="/admin/applications" className="p-4 text-left bg-gray-50 rounded-lg hover:bg-[#3A95E8]/5 transition-colors duration-200">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-[#3A95E8]/10 rounded-lg">
+                <FileCheck className="w-5 h-5 text-[#3A95E8]" />
+              </div>
               <div>
-                <p className="text-sm font-medium text-gray-900">
-                  New user registered
-                </p>
-                <p className="text-xs text-gray-500">
-                  John Doe (Applicant) - 3 hours ago
-                </p>
+                <h3 className="font-medium text-gray-900">Review Applications</h3>
+                <p className="text-sm text-gray-500">Check pending applications</p>
               </div>
             </div>
-            <div className="flex items-center">
-              <div className="w-2 h-2 bg-purple-500 rounded-full mr-3"></div>
-              <div>
-                <p className="text-sm font-medium text-gray-900">
-                  New application submitted
-                </p>
-                <p className="text-xs text-gray-500">
-                  For Research Fellow position - 5 hours ago
-                </p>
-              </div>
-            </div>
-          </div>
+          </Link>
         </div>
       </div>
     </div>

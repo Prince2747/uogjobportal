@@ -1,12 +1,19 @@
 import { NextResponse } from 'next/server'; 
 import { prisma } from '@/lib/prisma';
-import { hash } from 'bcrypt';
-import { sendVerificationEmail } from '@/lib/email';
-import { randomBytes } from 'crypto';
+import bcrypt from 'bcryptjs';
+import { user_role } from '@prisma/client';
 
 export async function POST(req: Request) {
   try {
-    const { email, password, name, role } = await req.json();
+    const { name, email, password, department } = await req.json();
+
+    // Validate required fields
+    if (!name || !email || !password) {
+      return NextResponse.json(
+        { message: "Name, email, and password are required" },
+        { status: 400 }
+      );
+    }
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
@@ -15,51 +22,39 @@ export async function POST(req: Request) {
 
     if (existingUser) {
       return NextResponse.json(
-        { error: 'User already exists' },
+        { message: "User with this email already exists" },
         { status: 400 }
       );
     }
 
     // Hash password
-    const hashedPassword = await hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 12);
 
-    // Create user
+    // Create new user
     const user = await prisma.user.create({
       data: {
-        email,
         name,
-        password: hashedPassword,
-        role,
+        email,
+        hashedPassword,
+        department,
+        role: user_role.APPLICANT,
+        isActive: true,
+        emailVerified: new Date(),
       },
     });
 
-    // Generate verification token
-    const token = randomBytes(32).toString('hex');
-    const expires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-
-    // Create verification token
-    await prisma.verificationToken.create({
-      data: {
-        token,
-        expires,
-        userId: user.id,
-      },
-    });
-
-    // Send verification email
-    await sendVerificationEmail(email, token);
+    // Remove sensitive data from response
+    const { hashedPassword: _, ...userWithoutPassword } = user;
 
     return NextResponse.json(
-      {
-        message: 'User created successfully. Please check your email to verify your account.',
-      },
+      { message: "User created successfully", user: userWithoutPassword },
       { status: 201 }
     );
   } catch (error) {
-    console.error('Signup error:', error);
+    console.error("Signup error:", error);
     return NextResponse.json(
-      { error: 'Something went wrong' },
+      { message: "Something went wrong" },
       { status: 500 }
     );
   }
-} 
+}

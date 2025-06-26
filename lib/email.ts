@@ -1,43 +1,34 @@
-import { Resend } from 'resend';
+import nodemailer from "nodemailer";
 
+interface EmailOptions {
+  to: string;
+  subject: string;
+  html: string;
+}
 
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: parseInt(process.env.SMTP_PORT || "587"),
+  secure: process.env.SMTP_SECURE === "true",
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASSWORD,
+  },
+});
+
+export async function sendEmail({ to, subject, html }: EmailOptions) {
   try {
-    const { data, error } = await resend.emails.send({
-      from: 'UoG Job Portal <noreply@uogjobportal.edu.et>',
-      to: email,
-      subject: 'Verify your email address',
-      html: emailHtml,
+    const info = await transporter.sendMail({
+      from: process.env.SMTP_FROM,
+      to,
+      subject,
+      html,
     });
 
-    if (error) {
-      console.error('Error sending verification email:', error);
-      throw new Error('Failed to send verification email');
-    }
-
-    return data;
+    console.log("Email sent:", info.messageId);
+    return info;
   } catch (error) {
-    console.error('Error sending verification email:', error);
-    throw new Error('Failed to send verification email');
-  }
-} 
-
-
-  try {
-    const { data, error } = await resend.emails.send({
-      from: 'UoG Job Portal <noreply@uogjobportal.edu.et>',
-      to: email,
-      subject: 'Verify your email address',
-      html: emailHtml,
-    });
-
-    if (error) {
-      console.error('Error sending verification email:', error);
-      throw new Error('Failed to send verification email');
-    }
-
-    return data;
-  } catch (error) {
-    console.error('Error sending verification email:', error);
-    throw new Error('Failed to send verification email');
+    console.error("Error sending email:", error);
+    throw error;
   }
 }

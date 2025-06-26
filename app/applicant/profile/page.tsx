@@ -9,9 +9,6 @@ export default async function ProfilePage() {
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    include: {
-      profile: true,
-    },
   });
 
   return (
@@ -62,80 +59,88 @@ export default async function ProfilePage() {
                     {user?.email}
                   </div>
                 </div>
-              </div>
-            </div>
-
-            {/* Profile Details */}
-            {user?.profile && (
-              <div>
-                <h2 className="text-lg font-medium text-gray-900">
-                  Profile Details
-                </h2>
-                <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Phone
-                    </label>
-                    <div className="mt-1 text-sm text-gray-900">
-                      {user.profile.phone || "Not provided"}
-                    </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Department
+                  </label>
+                  <div className="mt-1 text-sm text-gray-900">
+                    {user?.department || "Not provided"}
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Address
-                    </label>
-                    <div className="mt-1 text-sm text-gray-900">
-                      {user.profile.address || "Not provided"}
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Education
-                    </label>
-                    <div className="mt-1 text-sm text-gray-900">
-                      {user.profile.education || "Not provided"}
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Experience
-                    </label>
-                    <div className="mt-1 text-sm text-gray-900">
-                      {user.profile.experience || "Not provided"}
-                    </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Role
+                  </label>
+                  <div className="mt-1 text-sm text-gray-900">
+                    {user?.role}
                   </div>
                 </div>
               </div>
-            )}
+            </div>
 
-            {/* Documents */}
+            {/* Account Status */}
             <div>
-              <h2 className="text-lg font-medium text-gray-900">Documents</h2>
-              <div className="mt-4">
-                {user?.profile?.documents ? (
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    {user.profile.documents.map((doc, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
-                      >
-                        <div className="flex items-center space-x-3">
-                          <span className="text-2xl">📄</span>
-                          <span className="text-sm font-medium text-gray-900">
-                            {doc}
-                          </span>
-                        </div>
-                        <button className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
-                          Download
-                        </button>
-                      </div>
-                    ))}
+              <h2 className="text-lg font-medium text-gray-900">Account Status</h2>
+              <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Account Status
+                  </label>
+                  <div className="mt-1">
+                    <span
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        user?.isActive
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {user?.isActive ? "Active" : "Inactive"}
+                    </span>
                   </div>
-                ) : (
-                  <p className="text-sm text-gray-500">
-                    No documents uploaded yet.
-                  </p>
-                )}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Email Verification
+                  </label>
+                  <div className="mt-1">
+                    <span
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        user?.emailVerified
+                          ? "bg-green-100 text-green-800"
+                          : "bg-yellow-100 text-yellow-800"
+                      }`}
+                    >
+                      {user?.emailVerified ? "Verified" : "Not Verified"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Account Information */}
+            <div>
+              <h2 className="text-lg font-medium text-gray-900">Account Information</h2>
+              <div className="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Member Since
+                  </label>
+                  <div className="mt-1 text-sm text-gray-900">
+                    {user?.createdAt
+                      ? new Date(user.createdAt).toLocaleDateString()
+                      : "Not available"}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Last Updated
+                  </label>
+                  <div className="mt-1 text-sm text-gray-900">
+                    {user?.updatedAt
+                      ? new Date(user.updatedAt).toLocaleDateString()
+                      : "Not available"}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
